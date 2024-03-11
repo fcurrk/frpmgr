@@ -1,0 +1,39 @@
+name: Releaser
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.20'
+
+      - name: Setup VS environment
+        shell: cmd
+        run: |
+          for /f "usebackq delims=" %%i in (`vswhere.exe -latest -property installationPath`) do echo %%i\VC\Auxiliary\Build>>%GITHUB_PATH%
+
+      - name: Build
+        id: build
+        shell: cmd
+        run: |
+          for /f "tokens=3" %%a in ('findstr /r "Number.*=.*[0-9.]*" .\pkg\version\version.go') do set VERSION=%%a
+          echo version=%VERSION:"=%>>%GITHUB_OUTPUT%
+          build.bat
+
+      - name: Upload assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: assets
+          path: |
+            bin/*.exe
+            bin/*.zip
