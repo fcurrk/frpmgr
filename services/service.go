@@ -3,7 +3,6 @@ package services
 import (
 	"crypto/md5"
 	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,17 +13,6 @@ import (
 	"github.com/koho/frpmgr/pkg/config"
 	"github.com/koho/frpmgr/pkg/util"
 )
-
-type Service interface {
-	// Run service in blocking mode.
-	Run()
-	// Reload config file.
-	Reload() error
-	// Stop service and cleanup resources.
-	Stop(wait bool)
-	// Done returns a channel that's closed when work done.
-	Done() <-chan struct{}
-}
 
 func ServiceNameOfClient(name string) string {
 	return fmt.Sprintf("frpmgr_%x", md5.Sum([]byte(name)))
@@ -52,7 +40,7 @@ func (service *frpService) Execute(args []string, r <-chan svc.ChangeRequest, ch
 		changes <- svc.Status{State: svc.StopPending}
 	}()
 
-	cc, err := config.UnmarshalClientConf(service.configPath)
+	cc, err := config.UnmarshalClientConfFromIni(service.configPath)
 	if err != nil {
 		return
 	}
@@ -71,13 +59,7 @@ func (service *frpService) Execute(args []string, r <-chan svc.ChangeRequest, ch
 		return
 	}
 
-	var svr Service
-	if cc.SVCBEnable && net.ParseIP(cc.ServerAddress) == nil {
-		// WARNING: Experimental feature.
-		svr, err = NewFrpClientSVCBService(service.configPath)
-	} else {
-		svr, err = NewFrpClientService(service.configPath)
-	}
+	svr, err := NewFrpClientService(service.configPath)
 	if err != nil {
 		return
 	}
@@ -102,8 +84,6 @@ func (service *frpService) Execute(args []string, r <-chan svc.ChangeRequest, ch
 				changes <- c.CurrentStatus
 			default:
 			}
-		case <-svr.Done():
-			return
 		case <-expired:
 			svr.Stop(false)
 			deleteFrpConfig(args[0], service.configPath, cc)

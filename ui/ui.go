@@ -8,7 +8,7 @@ import (
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"github.com/lxn/win"
-	"github.com/samber/lo"
+	"github.com/thoas/go-funk"
 	"golang.org/x/sys/windows"
 
 	"github.com/koho/frpmgr/i18n"
@@ -87,6 +87,16 @@ func RunUI() error {
 					fm.prefPage.Page(),
 					fm.aboutPage.Page(),
 				},
+			},
+		},
+		Functions: map[string]func(args ...interface{}) (interface{}, error){
+			"sysIcon": func(args ...interface{}) (interface{}, error) {
+				for _, index := range args[2:] {
+					if icon := loadSysIcon(args[0].(string), int32(index.(float64)), int(args[1].(float64))); icon != nil {
+						return icon, nil
+					}
+				}
+				return nil, nil
 			},
 		},
 		OnDropFiles: fm.confPage.confView.ImportFiles,
@@ -192,11 +202,11 @@ func calculateHeadColumnTextWidth(widgets []Widget, columns int) int {
 
 // calculateStringWidth returns the estimated display width of the given string
 func calculateStringWidth(str string) int {
-	return lo.Sum(lo.Map(util.RuneSizeInString(str), func(s int, i int) int {
+	return int(funk.Sum(funk.Map(util.RuneSizeInString(str), func(s int) int {
 		// For better estimation, reduce size for non-ascii character
 		if s > 1 {
 			return s - 1
 		}
 		return s
-	})) * 6
+	})) * 6)
 }

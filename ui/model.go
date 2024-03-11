@@ -2,11 +2,10 @@ package ui
 
 import (
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/lxn/walk"
-	"github.com/samber/lo"
+	"github.com/thoas/go-funk"
 
 	"github.com/koho/frpmgr/pkg/config"
 	"github.com/koho/frpmgr/pkg/util"
@@ -77,22 +76,20 @@ func NewProxyModel(conf *Conf) *ProxyModel {
 	m := new(ProxyModel)
 	m.conf = conf
 	m.data = conf.Data.(*config.ClientConfig)
-	m.items = lo.Map(m.data.Proxies, func(p *config.Proxy, i int) ProxyItem {
+	m.items = funk.Map(m.data.Proxies, func(p *config.Proxy) ProxyItem {
 		pi := ProxyItem{Proxy: p, DisplayLocalIP: p.LocalIP, DisplayLocalPort: p.LocalPort}
 		// Combine subdomain and custom domains to form a list of domains
-		pi.Domains = strings.Join(lo.Filter([]string{p.SubDomain, p.CustomDomains}, func(s string, i int) bool {
+		pi.Domains = strings.Join(funk.FilterString([]string{p.SubDomain, p.CustomDomains}, func(s string) bool {
 			return strings.TrimSpace(s) != ""
 		}), ",")
 		// Show bind address and server name for visitor
 		if p.IsVisitor() {
 			pi.Domains = p.ServerName
 			pi.DisplayLocalIP = p.BindAddr
-			if p.BindPort > 0 {
-				pi.DisplayLocalPort = strconv.Itoa(p.BindPort)
-			}
+			pi.DisplayLocalPort = p.BindPort
 		}
 		return pi
-	})
+	}).([]ProxyItem)
 	return m
 }
 
@@ -182,64 +179,4 @@ func NewNonSortedModel[T any](items []*T) *NonSortedModel[T] {
 
 func (m *NonSortedModel[T]) Items() interface{} {
 	return m.items
-}
-
-// AttributeModel is a list of name-value pairs.
-type AttributeModel struct {
-	walk.TableModelBase
-	data [][2]string
-}
-
-func NewAttributeModel(attrs map[string]string) *AttributeModel {
-	m := &AttributeModel{data: make([][2]string, 0, len(attrs))}
-	for k, v := range attrs {
-		m.data = append(m.data, [2]string{k, v})
-	}
-	return m
-}
-
-func (a *AttributeModel) Value(row, col int) interface{} {
-	var empty string
-	if row >= 0 && row < len(a.data) && col >= 0 && col < 2 {
-		return &a.data[row][col]
-	}
-	return &empty
-}
-
-func (a *AttributeModel) RowCount() int {
-	return len(a.data)
-}
-
-func (a *AttributeModel) Add(k, v string) {
-	a.data = append(a.data, [2]string{k, v})
-	i := len(a.data) - 1
-	a.PublishRowsInserted(i, i)
-}
-
-func (a *AttributeModel) Delete(i int) {
-	if i >= 0 && i < len(a.data) {
-		a.data = append(a.data[:i], a.data[i+1:]...)
-		a.PublishRowsRemoved(i, i)
-	}
-}
-
-func (a *AttributeModel) Clear() {
-	a.data = nil
-	a.PublishRowsReset()
-}
-
-func (a *AttributeModel) AsMap() map[string]string {
-	if len(a.data) == 0 {
-		return nil
-	}
-	var m map[string]string
-	for _, pair := range a.data {
-		if k := strings.TrimSpace(pair[0]); k != "" {
-			if m == nil {
-				m = make(map[string]string)
-			}
-			m[k] = strings.TrimSpace(pair[1])
-		}
-	}
-	return m
 }

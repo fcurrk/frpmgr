@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,8 +25,7 @@ func init() {
 func main() {
 	files, err := os.ReadDir(dir)
 	if err != nil {
-		println(err.Error())
-		os.Exit(1)
+		log.Fatal(err)
 	}
 	for _, f := range files {
 		if f.IsDir() {
@@ -40,7 +40,7 @@ func main() {
 		res, err := exec.Command(".deps/convert.exe", "-background", "none", path,
 			"-define", "icon:auto-resize=256,192,128,96,64,48,40,32,24,20,16", "-compress", "zip", output).CombinedOutput()
 		if err != nil {
-			println(err.Error(), string(res))
+			log.Fatalf("Failed to convert icon: %s", string(res))
 		}
 	}
 }

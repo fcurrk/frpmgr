@@ -217,41 +217,6 @@
             "fuzzy": true
         },
         {
-            "id": "Name",
-            "message": "Name",
-            "translation": "Name",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Value",
-            "message": "Value",
-            "translation": "Value",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Add",
-            "message": "Add",
-            "translation": "Add",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Delete",
-            "message": "Delete",
-            "translation": "Delete",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Clear All",
-            "message": "Clear All",
-            "translation": "Clear All",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Configuration",
             "message": "Configuration",
             "translation": "Configuration",
@@ -384,6 +349,13 @@
             "id": "Export All Configs to ZIP",
             "message": "Export All Configs to ZIP",
             "translation": "Export All Configs to ZIP",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Delete",
+            "message": "Delete",
+            "translation": "Delete",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -526,6 +498,13 @@
             "fuzzy": true
         },
         {
+            "id": "Name",
+            "message": "Name",
+            "translation": "Name",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Server Address",
             "message": "Server Address",
             "translation": "Server Address",
@@ -610,13 +589,6 @@
             "fuzzy": true
         },
         {
-            "id": "Parameters",
-            "message": "Parameters",
-            "translation": "Parameters",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Authentication",
             "message": "Authentication",
             "translation": "Authentication",
@@ -694,6 +666,13 @@
             "fuzzy": true
         },
         {
+            "id": "Admin Port",
+            "message": "Admin Port",
+            "translation": "Admin Port",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Password",
             "message": "Password",
             "translation": "Password",
@@ -711,13 +690,6 @@
             "id": "Select a local directory that the admin server will load resources from.",
             "message": "Select a local directory that the admin server will load resources from.",
             "translation": "Select a local directory that the admin server will load resources from.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Other Options",
-            "message": "Other Options",
-            "translation": "Other Options",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -788,13 +760,6 @@
             "id": "Pool Count",
             "message": "Pool Count",
             "translation": "Pool Count",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "UDP Packet Size",
-            "message": "UDP Packet Size",
-            "translation": "UDP Packet Size",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -918,16 +883,23 @@
             "fuzzy": true
         },
         {
-            "id": "Disable custom first byte",
-            "message": "Disable custom first byte",
-            "translation": "Disable custom first byte",
+            "id": "Advanced",
+            "message": "Advanced",
+            "translation": "Advanced",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Advanced",
-            "message": "Advanced",
-            "translation": "Advanced",
+            "id": "TCP Mux",
+            "message": "TCP Mux",
+            "translation": "TCP Mux",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Mux Keepalive",
+            "message": "Mux Keepalive",
+            "translation": "Mux Keepalive",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -939,9 +911,9 @@
             "fuzzy": true
         },
         {
-            "id": "TCP Mux",
-            "message": "TCP Mux",
-            "translation": "TCP Mux",
+            "id": "Other Options",
+            "message": "Other Options",
+            "translation": "Other Options",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -960,37 +932,23 @@
             "fuzzy": true
         },
         {
-            "id": "Use legacy format config file",
-            "message": "Use legacy format config file",
-            "translation": "Use legacy format config file",
+            "id": "Custom",
+            "message": "Custom",
+            "translation": "Custom",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Metadata",
-            "message": "Metadata",
-            "translation": "Metadata",
+            "id": "Custom Options",
+            "message": "Custom Options",
+            "translation": "Custom Options",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Experimental Features",
-            "message": "Experimental Features",
-            "translation": "Experimental Features",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "* The following features may affect the stability of the service.",
-            "message": "* The following features may affect the stability of the service.",
-            "translation": "* The following features may affect the stability of the service.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Use server SVCB records",
-            "message": "Use server SVCB records",
-            "translation": "Use server SVCB records",
+            "id": "* Refer to the [common] section of the FRP configuration file.",
+            "message": "* Refer to the [common] section of the FRP configuration file.",
+            "translation": "* Refer to the [common] section of the FRP configuration file.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1014,23 +972,6 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "name"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Unable to upgrade your config file due to proxy conversion failure, please check the proxy config and try again.\n\nBad proxy: {Name}",
-            "message": "Unable to upgrade your config file due to proxy conversion failure, please check the proxy config and try again.\n\nBad proxy: {Name}",
-            "translation": "Unable to upgrade your config file due to proxy conversion failure, please check the proxy config and try again.\n\nBad proxy: {Name}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "v.Name"
                 }
             ],
             "fuzzy": true
@@ -1175,13 +1116,6 @@
             "id": "Locations",
             "message": "Locations",
             "translation": "Locations",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Request headers",
-            "message": "Request headers",
-            "translation": "Request headers",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1424,6 +1358,13 @@
             "fuzzy": true
         },
         {
+            "id": "* Refer to the parameters supported by FRP.",
+            "message": "* Refer to the parameters supported by FRP.",
+            "translation": "* Refer to the parameters supported by FRP.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Proxy already exists",
             "message": "Proxy already exists",
             "translation": "Proxy already exists",
@@ -1448,62 +1389,6 @@
             "fuzzy": true
         },
         {
-            "id": "Bind port is required.",
-            "message": "Bind port is required.",
-            "translation": "Bind port is required.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Requires local port or plugin.",
-            "message": "Requires local port or plugin.",
-            "translation": "Requires local port or plugin.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Invalid local port.",
-            "message": "Invalid local port.",
-            "translation": "Invalid local port.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Health check url is required.",
-            "message": "Health check url is required.",
-            "translation": "Health check url is required.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The plugin does not support range ports.",
-            "message": "The plugin does not support range ports.",
-            "translation": "The plugin does not support range ports.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Invalid remote port.",
-            "message": "Invalid remote port.",
-            "translation": "Invalid remote port.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The number of local ports should be the same as the number of remote ports.",
-            "message": "The number of local ports should be the same as the number of remote ports.",
-            "translation": "The number of local ports should be the same as the number of remote ports.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Custom domains and subdomain should have at least one of these set.",
-            "message": "Custom domains and subdomain should have at least one of these set.",
-            "translation": "Custom domains and subdomain should have at least one of these set.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Open Log Folder",
             "message": "Open Log Folder",
             "translation": "Open Log Folder",
@@ -1521,6 +1406,13 @@
             "id": "Item",
             "message": "Item",
             "translation": "Item",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Value",
+            "message": "Value",
+            "translation": "Value",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1637,40 +1529,6 @@
             "fuzzy": true
         },
         {
-            "id": "Stop config \"{Name}\"",
-            "message": "Stop config \"{Name}\"",
-            "translation": "Stop config \"{Name}\"",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "conf.Name"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Are you sure you would like to stop config \"{Name}\"?",
-            "message": "Are you sure you would like to stop config \"{Name}\"?",
-            "translation": "Are you sure you would like to stop config \"{Name}\"?",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "conf.Name"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "Stop",
             "message": "Stop",
             "translation": "Stop",
@@ -1681,6 +1539,13 @@
             "id": "Local Directory",
             "message": "Local Directory",
             "translation": "Local Directory",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Add",
+            "message": "Add",
+            "translation": "Add",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1846,9 +1711,9 @@
             "fuzzy": true
         },
         {
-            "id": "Disable",
-            "message": "Disable",
-            "translation": "Disable",
+            "id": "Enable",
+            "message": "Enable",
+            "translation": "Enable",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1877,13 +1742,6 @@
             "id": "Copy Access Address",
             "message": "Copy Access Address",
             "translation": "Copy Access Address",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "This feature only supports text in INI or TOML format.",
-            "message": "This feature only supports text in INI or TOML format.",
-            "translation": "This feature only supports text in INI or TOML format.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1956,9 +1814,9 @@
             "fuzzy": true
         },
         {
-            "id": "Enable",
-            "message": "Enable",
-            "translation": "Enable",
+            "id": "Disable",
+            "message": "Disable",
+            "translation": "Disable",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

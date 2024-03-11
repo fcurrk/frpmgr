@@ -3,10 +3,10 @@ package ui
 import (
 	"os"
 	"path/filepath"
-	"slices"
 	"sync"
 
 	"github.com/lxn/walk"
+	"github.com/thoas/go-funk"
 
 	"github.com/koho/frpmgr/pkg/config"
 	"github.com/koho/frpmgr/pkg/consts"
@@ -73,18 +73,17 @@ func (conf *Conf) Delete() (bool, error) {
 // Save config to the disk. The config will be completed before saving
 func (conf *Conf) Save() error {
 	conf.Data.Complete(false)
-	conf.Path = PathOfConf(conf.Name + ".conf")
+	conf.Path = PathOfConf(conf.Name + ".ini")
 	return conf.Data.Save(conf.Path)
 }
 
 var (
 	appConf = config.App{Defaults: config.ClientCommon{
-		ServerPort:                7000,
-		LogLevel:                  "info",
-		LogMaxDays:                3,
-		TCPMux:                    true,
-		TLSEnable:                 true,
-		DisableCustomTLSFirstByte: true,
+		ServerPort: "7000",
+		LogLevel:   "info",
+		LogMaxDays: 3,
+		TCPMux:     true,
+		TLSEnable:  true,
 	}}
 	// The config list contains all the loaded configs
 	confList  []*Conf
@@ -95,14 +94,14 @@ var (
 func loadAllConfs() error {
 	_ = config.UnmarshalAppConfFromIni(config.DefaultAppFile, &appConf)
 	// Find all config files in `profiles` directory
-	files, err := filepath.Glob(PathOfConf("*.conf"))
+	files, err := filepath.Glob(PathOfConf("*.ini"))
 	if err != nil {
 		return err
 	}
 	confList = make([]*Conf, 0)
 	for _, f := range files {
 		c := NewConf(f, nil)
-		if conf, err := config.UnmarshalClientConf(f); err == nil {
+		if conf, err := config.UnmarshalClientConfFromIni(f); err == nil {
 			c.Data = conf
 			if conf.DeleteAfterDays > 0 {
 				if t, err := config.Expiry(f, conf.AutoDelete); err == nil && t <= 0 {
@@ -146,7 +145,7 @@ func deleteConf(conf *Conf) bool {
 
 // Check whether a config exists with the given name
 func hasConf(name string) bool {
-	return slices.ContainsFunc(confList, func(e *Conf) bool { return e.Name == name })
+	return funk.Contains(confList, func(e *Conf) bool { return e.Name == name })
 }
 
 // ConfBinder is the view model of the current selected config

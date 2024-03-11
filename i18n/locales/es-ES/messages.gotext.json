@@ -167,31 +167,6 @@
             "translation": "Cancelar"
         },
         {
-            "id": "Name",
-            "message": "Name",
-            "translation": "Nombre"
-        },
-        {
-            "id": "Value",
-            "message": "Value",
-            "translation": "Valorizar"
-        },
-        {
-            "id": "Add",
-            "message": "Add",
-            "translation": "Agregar"
-        },
-        {
-            "id": "Delete",
-            "message": "Delete",
-            "translation": "Borrar"
-        },
-        {
-            "id": "Clear All",
-            "message": "Clear All",
-            "translation": "Limpiar todo"
-        },
-        {
             "id": "Configuration",
             "message": "Configuration",
             "translation": "Configuración"
@@ -290,6 +265,11 @@
             "id": "Export All Configs to ZIP",
             "message": "Export All Configs to ZIP",
             "translation": "Exportar todas las configuraciones a ZIP"
+        },
+        {
+            "id": "Delete",
+            "message": "Delete",
+            "translation": "Borrar"
         },
         {
             "id": "New Config",
@@ -410,6 +390,11 @@
             "translation": "Básico"
         },
         {
+            "id": "Name",
+            "message": "Name",
+            "translation": "Nombre"
+        },
+        {
             "id": "Server Address",
             "message": "Server Address",
             "translation": "Dirección del servidor"
@@ -470,11 +455,6 @@
             "translation": "Dirección de token"
         },
         {
-            "id": "Parameters",
-            "message": "Parameters",
-            "translation": "Parámetros"
-        },
-        {
             "id": "Authentication",
             "message": "Authentication",
             "translation": "Autenticación"
@@ -530,6 +510,11 @@
             "translation": "Dirección"
         },
         {
+            "id": "Admin Port",
+            "message": "Admin Port",
+            "translation": "Puerto"
+        },
+        {
             "id": "Password",
             "message": "Password",
             "translation": "Clave"
@@ -543,11 +528,6 @@
             "id": "Select a local directory that the admin server will load resources from.",
             "message": "Select a local directory that the admin server will load resources from.",
             "translation": "Seleccione un directorio local desde el que el servidor de administración cargará los recursos."
-        },
-        {
-            "id": "Other Options",
-            "message": "Other Options",
-            "translation": "Otras opciones"
         },
         {
             "id": "Auto Delete",
@@ -598,11 +578,6 @@
             "id": "Pool Count",
             "message": "Pool Count",
             "translation": "Conectar cuenta"
-        },
-        {
-            "id": "UDP Packet Size",
-            "message": "UDP Packet Size",
-            "translation": "Tamaño del paquete UDP"
         },
         {
             "id": "Heartbeat",
@@ -690,14 +665,19 @@
             "translation": "Seleccionar archivo CA de confianza"
         },
         {
-            "id": "Disable custom first byte",
-            "message": "Disable custom first byte",
-            "translation": "Desactivar primer byte personalizado"
-        },
-        {
             "id": "Advanced",
             "message": "Advanced",
             "translation": "Avanzado"
+        },
+        {
+            "id": "TCP Mux",
+            "message": "TCP Mux",
+            "translation": "Mux TCP"
+        },
+        {
+            "id": "Mux Keepalive",
+            "message": "Mux Keepalive",
+            "translation": "Mux Keepalive"
         },
         {
             "id": "Source Address",
@@ -705,9 +685,9 @@
             "translation": "Dirección de la fuente"
         },
         {
-            "id": "TCP Mux",
-            "message": "TCP Mux",
-            "translation": "Mux TCP"
+            "id": "Other Options",
+            "message": "Other Options",
+            "translation": "Otras opciones"
         },
         {
             "id": "Exit after login failure",
@@ -720,29 +700,19 @@
             "translation": "Desactivar el inicio automático al arrancar"
         },
         {
-            "id": "Use legacy format config file",
-            "message": "Use legacy format config file",
-            "translation": "Usar archivo de configuración de formato heredado"
+            "id": "Custom",
+            "message": "Custom",
+            "translation": "Disfraz"
         },
         {
-            "id": "Metadata",
-            "message": "Metadata",
-            "translation": "Metadatos"
+            "id": "Custom Options",
+            "message": "Custom Options",
+            "translation": "Opciones personalizadas"
         },
         {
-            "id": "Experimental Features",
-            "message": "Experimental Features",
-            "translation": "Características experimentales"
-        },
-        {
-            "id": "* The following features may affect the stability of the service.",
-            "message": "* The following features may affect the stability of the service.",
-            "translation": "* Las siguientes características pueden afectar la estabilidad del servicio."
-        },
-        {
-            "id": "Use server SVCB records",
-            "message": "Use server SVCB records",
-            "translation": "Usar registros SVCB del servidor"
+            "id": "* Refer to the [common] section of the FRP configuration file.",
+            "message": "* Refer to the [common] section of the FRP configuration file.",
+            "translation": "* Consulte la sección [common] del archivo de configuración de FRP."
         },
         {
             "id": "Config already exists",
@@ -761,21 +731,6 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "name"
-                }
-            ]
-        },
-        {
-            "id": "Unable to upgrade your config file due to proxy conversion failure, please check the proxy config and try again.\n\nBad proxy: {Name}",
-            "message": "Unable to upgrade your config file due to proxy conversion failure, please check the proxy config and try again.\n\nBad proxy: {Name}",
-            "translation": "No se puede actualizar su archivo de configuración debido a un error en la conversión del proxy. Verifique la configuración del proxy e inténtelo nuevamente.\n\nProxy incorrecto: {Name}",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "v.Name"
                 }
             ]
         },
@@ -883,11 +838,6 @@
             "id": "Locations",
             "message": "Locations",
             "translation": "Ruta URL"
-        },
-        {
-            "id": "Request headers",
-            "message": "Request headers",
-            "translation": "Solicitar encabezados"
         },
         {
             "id": "Multiplexer",
@@ -1060,6 +1010,11 @@
             "translation": "Intervalo"
         },
         {
+            "id": "* Refer to the parameters supported by FRP.",
+            "message": "* Refer to the parameters supported by FRP.",
+            "translation": "* Consulte los parámetros admitidos por FRP."
+        },
+        {
             "id": "Proxy already exists",
             "message": "Proxy already exists",
             "translation": "El proxy ya existe"
@@ -1080,46 +1035,6 @@
             ]
         },
         {
-            "id": "Bind port is required.",
-            "message": "Bind port is required.",
-            "translation": "Se requiere puerto de vinculación."
-        },
-        {
-            "id": "Requires local port or plugin.",
-            "message": "Requires local port or plugin.",
-            "translation": "Requiere puerto local o complemento."
-        },
-        {
-            "id": "Invalid local port.",
-            "message": "Invalid local port.",
-            "translation": "Puerto local no válido."
-        },
-        {
-            "id": "Health check url is required.",
-            "message": "Health check url is required.",
-            "translation": "Se requiere la URL de verificación de estado."
-        },
-        {
-            "id": "The plugin does not support range ports.",
-            "message": "The plugin does not support range ports.",
-            "translation": "El complemento no admite puertos de rango."
-        },
-        {
-            "id": "Invalid remote port.",
-            "message": "Invalid remote port.",
-            "translation": "Puerto remoto no válido."
-        },
-        {
-            "id": "The number of local ports should be the same as the number of remote ports.",
-            "message": "The number of local ports should be the same as the number of remote ports.",
-            "translation": "La cantidad de puertos locales debe ser la misma que la cantidad de puertos remotos."
-        },
-        {
-            "id": "Custom domains and subdomain should have at least one of these set.",
-            "message": "Custom domains and subdomain should have at least one of these set.",
-            "translation": "Los dominios y subdominios personalizados deben tener al menos uno de estos configurados."
-        },
-        {
             "id": "Open Log Folder",
             "message": "Open Log Folder",
             "translation": "Abrir registro"
@@ -1133,6 +1048,11 @@
             "id": "Item",
             "message": "Item",
             "translation": "Ítem"
+        },
+        {
+            "id": "Value",
+            "message": "Value",
+            "translation": "Valorizar"
         },
         {
             "id": "NAT Type",
@@ -1215,36 +1135,6 @@
             "translation": "Servicio"
         },
         {
-            "id": "Stop config \"{Name}\"",
-            "message": "Stop config \"{Name}\"",
-            "translation": "Detener configuración \"{Name}\"",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "conf.Name"
-                }
-            ]
-        },
-        {
-            "id": "Are you sure you would like to stop config \"{Name}\"?",
-            "message": "Are you sure you would like to stop config \"{Name}\"?",
-            "translation": "¿Está seguro de que desea detener la configuración \"{Name}\"?",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "conf.Name"
-                }
-            ]
-        },
-        {
             "id": "Stop",
             "message": "Stop",
             "translation": "Deténgase"
@@ -1253,6 +1143,11 @@
             "id": "Local Directory",
             "message": "Local Directory",
             "translation": "Directorio local"
+        },
+        {
+            "id": "Add",
+            "message": "Add",
+            "translation": "Agregar"
         },
         {
             "id": "Port",
@@ -1370,9 +1265,9 @@
             "translation": "Servidor de archivos HTTP"
         },
         {
-            "id": "Disable",
-            "message": "Disable",
-            "translation": "Deshabilitar"
+            "id": "Enable",
+            "message": "Enable",
+            "translation": "Habilitar"
         },
         {
             "id": "Open Config",
@@ -1393,11 +1288,6 @@
             "id": "Copy Access Address",
             "message": "Copy Access Address",
             "translation": "Copiar dirección de acceso"
-        },
-        {
-            "id": "This feature only supports text in INI or TOML format.",
-            "message": "This feature only supports text in INI or TOML format.",
-            "translation": "Esta función solo admite texto en formato INI o TOML."
         },
         {
             "id": "Delete proxy \"{Name}\"",
@@ -1460,9 +1350,9 @@
             ]
         },
         {
-            "id": "Enable",
-            "message": "Enable",
-            "translation": "Habilitar"
+            "id": "Disable",
+            "message": "Disable",
+            "translation": "Deshabilitar"
         },
         {
             "id": "Passive Port Range",

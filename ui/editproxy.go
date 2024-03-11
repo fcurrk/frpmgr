@@ -1,20 +1,17 @@
 package ui
 
 import (
-	"math"
-	"slices"
-	"strconv"
 	"strings"
 
-	frputil "github.com/fatedier/frp/pkg/util/util"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"github.com/lxn/win"
-	"github.com/samber/lo"
+	"github.com/thoas/go-funk"
 
 	"github.com/koho/frpmgr/i18n"
 	"github.com/koho/frpmgr/pkg/config"
 	"github.com/koho/frpmgr/pkg/consts"
+	"github.com/koho/frpmgr/pkg/util"
+	"github.com/koho/frpmgr/services"
 )
 
 type EditProxyDialog struct {
@@ -31,12 +28,14 @@ type EditProxyDialog struct {
 	dbs       [2]*walk.DataBinder
 	vmDB      *walk.DataBinder
 	viewModel proxyViewModel
-	metaModel *AttributeModel
 
 	// Views
-	nameView   *walk.LineEdit
-	typeView   *walk.ComboBox
-	pluginView *walk.ComboBox
+	nameView       *walk.LineEdit
+	localPortView  *walk.LineEdit
+	remotePortView *walk.LineEdit
+	customText     *walk.TextEdit
+	typeView       *walk.ComboBox
+	pluginView     *walk.ComboBox
 }
 
 // View model for ui logics
@@ -70,7 +69,7 @@ type editProxyBinder struct {
 
 	// Extra fields needed for ui display
 	Visitor       bool
-	BandwidthNum  int64
+	BandwidthNum  string
 	BandwidthUnit string
 }
 
@@ -89,7 +88,6 @@ func NewEditProxyDialog(configName string, proxy *config.Proxy, visitors []strin
 	if v.Proxy.BandwidthLimitMode == "" {
 		v.binder.BandwidthLimitMode = consts.BandwidthMode[0]
 	}
-	v.metaModel = NewAttributeModel(v.binder.Metas)
 	return v
 }
 
@@ -100,13 +98,13 @@ func (pd *EditProxyDialog) View() Dialog {
 		pd.pluginProxyPage(),
 		pd.loadBalanceProxyPage(),
 		pd.healthCheckProxyPage(),
-		pd.metadataProxyPage(),
+		pd.customProxyPage(),
 	}
 	title := i18n.Sprintf("New Proxy")
 	if pd.exist && pd.Proxy.Name != "" {
 		title = i18n.Sprintf("Edit Proxy - %s", pd.Proxy.Name)
 	}
-	dlg := NewBasicDialog(&pd.Dialog, title, loadIcon(consts.IconEditDialog, 32), DataBinder{
+	dlg := NewBasicDialog(&pd.Dialog, title, loadSysIcon("imageres", consts.IconEditDialog, 32), DataBinder{
 		AssignTo:   &pd.vmDB,
 		Name:       "vm",
 		DataSource: &pd.viewModel,
@@ -126,8 +124,8 @@ func (pd *EditProxyDialog) View() Dialog {
 					Layout: HBox{MarginsZero: true},
 					Children: []Widget{
 						LineEdit{AssignTo: &pd.nameView, Text: Bind("Name", consts.ValidateNonEmpty)},
-						PushButton{Text: i18n.SprintfLSpace("Random"), Image: loadIcon(consts.IconRandom, 16), OnClicked: func() {
-							pd.nameView.SetText(lo.RandomString(8, lo.AlphanumericCharset))
+						PushButton{Text: i18n.SprintfLSpace("Random"), Image: loadResourceIcon(consts.IconRefresh, 16), OnClicked: func() {
+							pd.nameView.SetText(funk.RandomString(8))
 						}},
 					},
 				},
@@ -156,9 +154,9 @@ func (pd *EditProxyDialog) View() Dialog {
 		},
 	)
 	dlg.Layout = VBox{Margins: Margins{Left: 7, Top: 9, Right: 7, Bottom: 9}}
-	minWidth := lo.Sum(lo.Map(pages, func(page TabPage, i int) int {
+	minWidth := int(funk.Sum(funk.Map(pages, func(page TabPage) int {
 		return calculateStringWidth(page.Title.(string)) + 20
-	})) + 20
+	})) + 20)
 	// Keep a better aspect ratio
 	if minWidth < 350 {
 		minWidth += 30
@@ -183,15 +181,21 @@ func (pd *EditProxyDialog) basicProxyPage() TabPage {
 			Label{Visible: Bind("vm.LocalAddrVisible"), Text: i18n.SprintfColon("Local Address")},
 			LineEdit{Visible: Bind("vm.LocalAddrVisible"), Text: Bind("LocalIP")},
 			Label{Visible: Bind("vm.LocalPortVisible"), Text: i18n.SprintfColon("Local Port")},
-			LineEdit{Visible: Bind("vm.LocalPortVisible"), Text: Bind("LocalPort")},
+			LineEdit{
+				AssignTo: &pd.localPortView, Visible: Bind("vm.LocalPortVisible"),
+				Text: Bind("LocalPort"), OnTextChanged: pd.watchRangePort,
+			},
 			Label{Visible: Bind("vm.RemotePortVisible"), Text: i18n.SprintfColon("Remote Port")},
-			LineEdit{Visible: Bind("vm.RemotePortVisible"), Text: Bind("RemotePort")},
+			LineEdit{
+				AssignTo: &pd.remotePortView, Visible: Bind("vm.RemotePortVisible"),
+				Text: Bind("RemotePort"), OnTextChanged: pd.watchRangePort,
+			},
 			Label{Visible: Bind("vm.RoleVisible && !vm.ServerNameVisible"), Text: i18n.SprintfColon("Allow Users")},
 			LineEdit{Visible: Bind("vm.RoleVisible && !vm.ServerNameVisible"), Text: Bind("AllowUsers")},
 			Label{Visible: Bind("vm.BindAddrVisible"), Text: i18n.SprintfColon("Bind Address")},
 			LineEdit{Visible: Bind("vm.BindAddrVisible"), Text: Bind("BindAddr")},
 			Label{Visible: Bind("vm.BindPortVisible"), Text: i18n.SprintfColon("Bind Port")},
-			NumberEdit{Visible: Bind("vm.BindPortVisible"), Value: Bind("BindPort"), MinValue: -math.MaxFloat64, MaxValue: 65535},
+			LineEdit{Visible: Bind("vm.BindPortVisible"), Text: Bind("BindPort")},
 			Label{Visible: Bind("vm.ServerNameVisible"), Text: i18n.SprintfColon("Server Name")},
 			LineEdit{Visible: Bind("vm.ServerNameVisible"), Text: Bind("ServerName")},
 			Label{Visible: Bind("vm.ServerNameVisible"), Text: i18n.SprintfColon("Server User")},
@@ -201,16 +205,7 @@ func (pd *EditProxyDialog) basicProxyPage() TabPage {
 			Label{Visible: Bind("vm.DomainVisible"), Text: i18n.SprintfColon("Custom Domains")},
 			LineEdit{Visible: Bind("vm.DomainVisible"), Text: Bind("CustomDomains")},
 			Label{Visible: Bind("vm.HTTPVisible"), Text: i18n.SprintfColon("Locations")},
-			Composite{
-				Visible: Bind("vm.HTTPVisible"),
-				Layout:  HBox{MarginsZero: true},
-				Children: []Widget{
-					LineEdit{Text: Bind("Locations")},
-					ToolButton{Text: "H", ToolTipText: i18n.Sprintf("Request headers"), OnClicked: func() {
-						NewAttributeDialog(i18n.Sprintf("Request headers"), &pd.binder.Headers).Run(pd.Form())
-					}},
-				},
-			},
+			LineEdit{Visible: Bind("vm.HTTPVisible"), Text: Bind("Locations")},
 			Label{Visible: Bind("vm.MuxVisible"), Text: i18n.SprintfColon("Multiplexer")},
 			ComboBox{
 				Visible: Bind("vm.MuxVisible"),
@@ -236,14 +231,7 @@ func (pd *EditProxyDialog) advancedProxyPage() TabPage {
 				Visible: Bind("vm.PluginEnable"),
 				Layout:  HBox{MarginsZero: true},
 				Children: []Widget{
-					NumberEdit{
-						Value:              Bind("BandwidthNum"),
-						MinValue:           0,
-						MaxValue:           math.MaxFloat64,
-						SpinButtonsVisible: true,
-						Style:              win.ES_RIGHT,
-						Greedy:             true,
-					},
+					LineEdit{Text: Bind("BandwidthNum")},
 					ComboBox{Model: consts.Bandwidth, Value: Bind("BandwidthUnit")},
 					Label{Text: "@"},
 					ComboBox{
@@ -336,16 +324,7 @@ func (pd *EditProxyDialog) pluginProxyPage() TabPage {
 			Label{Visible: Bind("vm.PluginAuthVisible"), Text: i18n.SprintfColon("Password")},
 			LineEdit{Visible: Bind("vm.PluginAuthVisible"), Text: Bind("PluginPasswd"), PasswordMode: true},
 			Label{Visible: Bind("vm.PluginHTTPFwdVisible"), Text: i18n.SprintfColon("Local Address")},
-			Composite{
-				Visible: Bind("vm.PluginHTTPFwdVisible"),
-				Layout:  HBox{MarginsZero: true},
-				Children: []Widget{
-					LineEdit{Text: Bind("PluginLocalAddr")},
-					ToolButton{Text: "H", ToolTipText: i18n.Sprintf("Request headers"), OnClicked: func() {
-						NewAttributeDialog(i18n.Sprintf("Request headers"), &pd.binder.PluginHeaders).Run(pd.Form())
-					}},
-				},
-			},
+			LineEdit{Visible: Bind("vm.PluginHTTPFwdVisible"), Text: Bind("PluginLocalAddr")},
 			Label{Visible: Bind("vm.PluginCertVisible"), Text: i18n.SprintfColon("Certificate")},
 			NewBrowseLineEdit(nil, Bind("vm.PluginCertVisible"), true, Bind("PluginCrtPath"),
 				i18n.Sprintf("Select Certificate File"), consts.FilterCert, true),
@@ -394,12 +373,13 @@ func (pd *EditProxyDialog) healthCheckProxyPage() TabPage {
 	}, 0)
 }
 
-func (pd *EditProxyDialog) metadataProxyPage() TabPage {
+func (pd *EditProxyDialog) customProxyPage() TabPage {
 	return TabPage{
-		Title:  i18n.Sprintf("Metadata"),
+		Title:  i18n.Sprintf("Custom"),
 		Layout: VBox{},
 		Children: []Widget{
-			NewAttributeTable(pd.metaModel, 0, 0),
+			Label{Text: i18n.Sprintf("* Refer to the parameters supported by FRP.")},
+			TextEdit{AssignTo: &pd.customText, Text: util.Map2String(pd.binder.Custom), VScroll: true},
 		},
 	}
 }
@@ -430,8 +410,8 @@ func (pd *EditProxyDialog) onSave() {
 	} else if pd.hasProxy(pd.binder.Name) {
 		return
 	}
-	// Update metadata
-	pd.binder.Proxy.Metas = pd.metaModel.AsMap()
+	// Update custom options
+	pd.binder.Proxy.Custom = util.String2Map(pd.customText.Text())
 	// Update role
 	if pd.binder.Visitor {
 		pd.binder.Proxy.Role = "visitor"
@@ -439,8 +419,8 @@ func (pd *EditProxyDialog) onSave() {
 		pd.binder.Proxy.Role = ""
 	}
 	// Update bandwidth
-	if pd.binder.BandwidthNum > 0 {
-		pd.binder.Proxy.BandwidthLimit = strconv.FormatInt(pd.binder.BandwidthNum, 10) + pd.binder.BandwidthUnit
+	if pd.binder.BandwidthNum != "" {
+		pd.binder.Proxy.BandwidthLimit = pd.binder.BandwidthNum + pd.binder.BandwidthUnit
 		if pd.binder.Proxy.BandwidthLimitMode == consts.BandwidthMode[0] {
 			pd.binder.Proxy.BandwidthLimitMode = ""
 		}
@@ -448,19 +428,22 @@ func (pd *EditProxyDialog) onSave() {
 		pd.binder.Proxy.BandwidthLimit = ""
 		pd.binder.Proxy.BandwidthLimitMode = ""
 	}
-	pd.binder.Proxy.LocalPort = strings.TrimSpace(pd.binder.Proxy.LocalPort)
-	pd.binder.Proxy.RemotePort = strings.TrimSpace(pd.binder.Proxy.RemotePort)
-	if ok := pd.validateProxy(pd.binder.Proxy); !ok {
+	pb, err := pd.binder.Proxy.Marshal()
+	if err != nil {
+		showError(err, pd.Form())
+		return
+	}
+	if err = services.VerifyClientProxy(pb); err != nil {
+		showError(err, pd.Form())
 		return
 	}
 	*pd.Proxy = pd.binder.Proxy
-	pd.Proxy.Complete()
 	pd.Accept()
 }
 
 func (pd *EditProxyDialog) hasProxy(name string) bool {
 	if conf := getCurrentConf(); conf != nil {
-		if slices.ContainsFunc(conf.Data.Items().([]*config.Proxy), func(proxy *config.Proxy) bool { return proxy.Name == name }) {
+		if funk.Contains(conf.Data.Items(), func(proxy *config.Proxy) bool { return proxy.Name == name }) {
 			showWarningMessage(pd.Form(), i18n.Sprintf("Proxy already exists"), i18n.Sprintf("The proxy name \"%s\" already exists.", name))
 			return true
 		}
@@ -528,84 +511,44 @@ func (pd *EditProxyDialog) switchType() {
 			}
 		}
 	}
+	pd.watchRangePort()
 	pd.vmDB.Reset()
 }
 
-func splitBandwidth(s string) (int64, string) {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return 0, "MB"
-	}
-
-	if strings.HasSuffix(s, "MB") || strings.HasSuffix(s, "KB") {
-		unit := s[len(s)-2:]
-		num, _ := strconv.ParseInt(strings.TrimSuffix(s, unit), 10, 64)
-		return num, unit
-	}
-	return 0, "MB"
-}
-
-func (pd *EditProxyDialog) validateProxy(p config.Proxy) bool {
-	if p.IsVisitor() {
-		if p.BindPort == 0 {
-			showErrorMessage(pd.Form(), "", i18n.Sprintf("Bind port is required."))
-			return false
-		}
-		return true
-	}
-	if p.Plugin == "" && p.LocalPort == "" {
-		showErrorMessage(pd.Form(), "", i18n.Sprintf("Requires local port or plugin."))
-		return false
-	}
-	if p.Plugin != "" {
-		p.LocalIP = ""
-		p.LocalPort = ""
-	} else if p.Type != consts.ProxyTypeTCP && p.Type != consts.ProxyTypeUDP {
-		if port, err := strconv.ParseInt(p.LocalPort, 10, 64); err != nil || port <= 0 {
-			showErrorMessage(pd.Form(), "", i18n.Sprintf("Invalid local port."))
-			return false
-		}
-	}
-	if p.HealthCheckType == "http" && p.HealthCheckURL == "" {
-		showErrorMessage(pd.Form(), "", i18n.Sprintf("Health check url is required."))
-		return false
-	}
-
-	switch p.Type {
-	case consts.ProxyTypeTCP, consts.ProxyTypeUDP:
-		if p.RemotePort == "" {
-			p.RemotePort = "0"
-		}
-		if p.Plugin != "" {
-			if p.IsRange() {
-				showErrorMessage(pd.Form(), "", i18n.Sprintf("The plugin does not support range ports."))
-			} else if port, err := strconv.ParseInt(p.RemotePort, 10, 64); err != nil || port < 0 {
-				showErrorMessage(pd.Form(), "", i18n.Sprintf("Invalid remote port."))
-			} else {
+func (pd *EditProxyDialog) watchRangePort() {
+	var isRange bool
+	// The "range:" function requires both local port and remote port are set
+	if pd.viewModel.LocalPortVisible && pd.viewModel.RemotePortVisible {
+		for _, portView := range []*walk.LineEdit{pd.localPortView, pd.remotePortView} {
+			portText := portView.Text()
+			isRange = strings.Contains(portText, "-") || strings.Contains(portText, ",")
+			if isRange {
 				break
 			}
-			return false
-		} else {
-			localPorts, err := frputil.ParseRangeNumbers(p.LocalPort)
-			if err != nil {
-				showError(err, pd.Form())
-				return false
-			}
-			remotePorts, err := frputil.ParseRangeNumbers(p.RemotePort)
-			if err != nil {
-				showError(err, pd.Form())
-				return false
-			}
-			if p.IsRange() && len(localPorts) != len(remotePorts) {
-				showErrorMessage(pd.Form(), "", i18n.Sprintf("The number of local ports should be the same as the number of remote ports."))
-				return false
-			}
-		}
-	case consts.ProxyTypeTCPMUX, consts.ProxyTypeHTTP, consts.ProxyTypeHTTPS:
-		if p.CustomDomains == "" && p.SubDomain == "" {
-			showErrorMessage(pd.Form(), "", i18n.Sprintf("Custom domains and subdomain should have at least one of these set."))
-			return false
 		}
 	}
-	return true
+	proxyName := pd.nameView.Text()
+	hasPrefix := strings.HasPrefix(proxyName, consts.RangePrefix)
+	if isRange {
+		if !hasPrefix {
+			pd.nameView.SetText(consts.RangePrefix + proxyName)
+		}
+	} else {
+		if hasPrefix {
+			pd.nameView.SetText(strings.TrimPrefix(proxyName, consts.RangePrefix))
+		}
+	}
+}
+
+func splitBandwidth(s string) (string, string) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return "", "MB"
+	}
+	if strings.HasSuffix(s, "MB") {
+		return strings.TrimSuffix(s, "MB"), "MB"
+	} else if strings.HasSuffix(s, "KB") {
+		return strings.TrimSuffix(s, "KB"), "KB"
+	}
+	return "", "MB"
 }

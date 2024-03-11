@@ -29,6 +29,7 @@ type PanelView struct {
 	addressText *walk.Label
 	toggleBtn   *walk.PushButton
 	svcOpenBtn  *walk.PushButton
+	copyImage   *walk.ImageView
 }
 
 func NewPanelView() *PanelView {
@@ -36,14 +37,6 @@ func NewPanelView() *PanelView {
 }
 
 func (pv *PanelView) View() Widget {
-	var cpIcon *walk.CustomWidget
-	cpIconColor := consts.ColorDarkGray
-	setCopyIconColor := func(button walk.MouseButton, color walk.Color) {
-		if button == walk.LeftButton {
-			cpIconColor = color
-			cpIcon.Invalidate()
-		}
-	}
 	return GroupBox{
 		AssignTo: &pv.GroupBox,
 		Title:    "",
@@ -68,23 +61,18 @@ func (pv *PanelView) View() Widget {
 				Children: []Widget{
 					Label{AssignTo: &pv.addressText},
 					HSpacer{Size: 5},
-					CustomWidget{
-						AssignTo:            &cpIcon,
-						Background:          TransparentBrush{},
-						ClearsBackground:    true,
-						InvalidatesOnResize: true,
-						MinSize:             Size{Width: 16, Height: 16},
-						ToolTipText:         i18n.Sprintf("Copy"),
-						PaintPixels: func(canvas *walk.Canvas, updateBounds walk.Rectangle) error {
-							return drawCopyIcon(canvas, cpIconColor)
-						},
+					ImageView{
+						AssignTo:    &pv.copyImage,
+						Image:       loadResourceIcon(consts.IconCopy, 16),
+						ToolTipText: i18n.Sprintf("Copy"),
 						OnMouseDown: func(x, y int, button walk.MouseButton) {
-							setCopyIconColor(button, consts.ColorLightBlue)
+							if button == walk.LeftButton {
+								pv.copyImage.SetImage(loadResourceIcon(consts.IconCopyActive, 16))
+							}
 						},
 						OnMouseUp: func(x, y int, button walk.MouseButton) {
-							setCopyIconColor(button, consts.ColorDarkGray)
-							bounds := cpIcon.ClientBoundsPixels()
-							if x >= 0 && x <= bounds.Right() && y >= 0 && y <= bounds.Bottom() {
+							if button == walk.LeftButton {
+								pv.copyImage.SetImage(loadResourceIcon(consts.IconCopy, 16))
 								walk.Clipboard().SetText(pv.addressText.Text())
 							}
 						},
@@ -136,11 +124,6 @@ func (pv *PanelView) ToggleService() {
 	}
 	var err error
 	if conf.State == consts.StateStarted {
-		if walk.MsgBox(pv.Form(), i18n.Sprintf("Stop config \"%s\"", conf.Name),
-			i18n.Sprintf("Are you sure you would like to stop config \"%s\"?", conf.Name),
-			walk.MsgBoxYesNo|walk.MsgBoxIconQuestion) == walk.DlgCmdNo {
-			return
-		}
 		err = pv.StopService(conf)
 	} else {
 		err = pv.StartService(conf)

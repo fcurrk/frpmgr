@@ -7,12 +7,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 
+	frpConfig "github.com/fatedier/frp/pkg/config"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"github.com/samber/lo"
+	"github.com/thoas/go-funk"
 
 	"github.com/koho/frpmgr/i18n"
 	"github.com/koho/frpmgr/pkg/config"
@@ -161,27 +161,27 @@ func (cv *ConfView) View() Widget {
 							Menu{
 								OnTriggered: cv.editNew,
 								Text:        i18n.Sprintf("New Config"),
-								Image:       loadIcon(consts.IconNewConf, 16),
+								Image:       loadSysIcon("shell32", consts.IconNewConf, 16),
 								Items: []MenuItem{
 									Action{
 										AssignTo:    &cv.tbAddAction,
 										Text:        i18n.Sprintf("Manual Settings"),
-										Image:       loadIcon(consts.IconCreate, 16),
+										Image:       loadSysIcon("shell32", consts.IconCreate, 16),
 										OnTriggered: cv.editNew,
 									},
 									Action{
 										Text:        i18n.SprintfEllipsis("Import from File"),
-										Image:       loadIcon(consts.IconFileImport, 16),
+										Image:       loadSysIcon("shell32", consts.IconFileImport, 16),
 										OnTriggered: cv.onFileImport,
 									},
 									Action{
 										Text:        i18n.SprintfEllipsis("Import from URL"),
-										Image:       loadIcon(consts.IconURLImport, 16),
+										Image:       loadSysIcon("imageres", consts.IconURLImport, 16),
 										OnTriggered: cv.onURLImport,
 									},
 									Action{
 										Text:        i18n.Sprintf("Import from Clipboard"),
-										Image:       loadIcon(consts.IconClipboard, 16),
+										Image:       loadSysIcon("shell32", consts.IconClipboard, 16),
 										OnTriggered: cv.onClipboardImport,
 									},
 								},
@@ -190,14 +190,14 @@ func (cv *ConfView) View() Widget {
 							Action{
 								Enabled:     Bind("conf.Selected"),
 								AssignTo:    &cv.tbDeleteAction,
-								Image:       loadIcon(consts.IconDelete, 16),
+								Image:       loadSysIcon("shell32", consts.IconDelete, 16),
 								OnTriggered: cv.onDelete,
 							},
 							Separator{},
 							Action{
 								Enabled:     Bind("conf.Selected"),
 								AssignTo:    &cv.tbExportAction,
-								Image:       loadIcon(consts.IconExport, 16),
+								Image:       loadSysIcon("imageres", consts.IconExport, 16),
 								OnTriggered: cv.onExport,
 							},
 						},
@@ -286,7 +286,7 @@ func (cv *ConfView) onURLImport() {
 			} else {
 				total++
 				if newPath, ok := cv.checkConfName(item.Filename, item.Rename); ok {
-					conf, err := config.UnmarshalClientConf(item.Data)
+					conf, err := config.UnmarshalClientConfFromIni(item.Data)
 					if err != nil {
 						showError(err, cv.Form())
 						continue
@@ -307,11 +307,10 @@ func (cv *ConfView) onURLImport() {
 func (cv *ConfView) checkConfName(filename string, rename bool) (string, bool) {
 	suffix := ""
 checkName:
-	baseName, _ := util.SplitExt(util.AddFileSuffix(filename, suffix))
-	newPath := PathOfConf(baseName + ".conf")
+	newPath := PathOfConf(util.AddFileSuffix(filename, suffix))
 	if _, err := os.Stat(newPath); err == nil {
 		if rename {
-			suffix = "_" + lo.RandomString(4, lo.AlphanumericCharset)
+			suffix = "_" + funk.RandomString(4)
 			goto checkName
 		}
 		return newPath, false
@@ -351,12 +350,8 @@ func (cv *ConfView) ImportFiles(files []string) {
 			if dir, err := util.IsDirectory(path); err != nil || dir {
 				continue
 			}
-			ext := strings.ToLower(filepath.Ext(path))
-			if ext == ".zip" {
-				subTotal, subImported := cv.importZip(path, nil, false)
-				total += subTotal
-				imported += subImported
-			} else if slices.Contains(consts.SupportedConfigFormats, ext) {
+			switch strings.ToLower(filepath.Ext(path)) {
+			case ".ini":
 				total++
 				newPath, ok := cv.checkConfName(path, false)
 				if !ok {
@@ -367,7 +362,7 @@ func (cv *ConfView) ImportFiles(files []string) {
 					continue
 				}
 				// Verify config before copying file
-				conf, err := config.UnmarshalClientConf(path)
+				conf, err := config.UnmarshalClientConfFromIni(path)
 				if err != nil {
 					showError(err, cv.Form())
 					continue
@@ -378,6 +373,10 @@ func (cv *ConfView) ImportFiles(files []string) {
 				}
 				addConf(NewConf(newPath, conf))
 				imported++
+			case ".zip":
+				subTotal, subImported := cv.importZip(path, nil, false)
+				total += subTotal
+				imported += subImported
 			}
 		}
 		return
@@ -395,7 +394,7 @@ func (cv *ConfView) importZip(path string, data []byte, rename bool) (total, imp
 		if err != nil {
 			return err
 		}
-		conf, err := config.UnmarshalClientConf(src)
+		conf, err := config.UnmarshalClientConfFromIni(src)
 		if err != nil {
 			return err
 		}
@@ -431,7 +430,7 @@ func (cv *ConfView) importZip(path string, data []byte, rename bool) (total, imp
 		if file.FileInfo().IsDir() {
 			continue
 		}
-		if !slices.Contains(consts.SupportedConfigFormats, strings.ToLower(filepath.Ext(file.Name))) {
+		if strings.ToLower(filepath.Ext(file.Name)) != ".ini" {
 			continue
 		}
 		total++
@@ -467,7 +466,7 @@ func (cv *ConfView) onClipboardImport() {
 			name = string(bytes.TrimSpace(content[1:i]))
 		}
 	}
-	conf, err := config.UnmarshalClientConf([]byte(text))
+	conf, err := config.UnmarshalClientConfFromIni([]byte(text))
 	if err != nil {
 		showError(err, cv.Form())
 		return
@@ -504,7 +503,7 @@ func (cv *ConfView) onDelete() {
 	if conf := getCurrentConf(); conf != nil {
 		if walk.MsgBox(cv.Form(), i18n.Sprintf("Delete config \"%s\"", conf.Name),
 			i18n.Sprintf("Are you sure you would like to delete config \"%s\"?", conf.Name),
-			walk.MsgBoxYesNo|walk.MsgBoxIconWarning) == walk.DlgCmdNo {
+			walk.MsgBoxOKCancel|walk.MsgBoxIconWarning) == walk.DlgCmdCancel {
 			return
 		}
 		if !hasConf(conf.Name) {
@@ -534,10 +533,10 @@ func (cv *ConfView) onExport() {
 		dlg.FilePath += ".zip"
 	}
 
-	files := lo.Map(confList, func(conf *Conf, i int) string {
+	files := funk.Map(confList, func(conf *Conf) string {
 		return conf.Path
 	})
-	if err := util.ZipFiles(dlg.FilePath, files); err != nil {
+	if err := util.ZipFiles(dlg.FilePath, files.([]string)); err != nil {
 		showError(err, cv.Form())
 	}
 }
@@ -552,7 +551,7 @@ func (cv *ConfView) onNATDiscovery() {
 		if appConf.Defaults.NatHoleSTUNServer != "" {
 			stunServer = appConf.Defaults.NatHoleSTUNServer
 		} else {
-			stunServer = consts.DefaultSTUNServer
+			stunServer = frpConfig.GetDefaultClientConf().NatHoleSTUNServer
 		}
 	}
 	if _, err := NewNATDiscoveryDialog(stunServer).Run(cv.Form()); err != nil {
@@ -563,18 +562,18 @@ func (cv *ConfView) onNATDiscovery() {
 // reset config listview with selected name
 func (cv *ConfView) reset(selectName string) {
 	// Make sure `sel` is a valid index
-	sel := max(cv.listView.CurrentIndex(), 0)
+	sel := funk.MaxInt([]int{cv.listView.CurrentIndex(), 0})
 	// Refresh the whole config list
 	// The confList will be sorted
 	cv.model = NewConfListModel(confList)
 	cv.listView.SetModel(cv.model)
 	if selectName != "" {
-		if idx := slices.IndexFunc(cv.model.items, func(conf *Conf) bool { return conf.Name == selectName }); idx >= 0 {
+		if idx := funk.IndexOf(cv.model.items, func(conf *Conf) bool { return conf.Name == selectName }); idx >= 0 {
 			sel = idx
 		}
 	}
 	// Make sure the final selected index is valid
-	if selectIdx := min(sel, len(cv.model.items)-1); selectIdx >= 0 {
+	if selectIdx := funk.MinInt([]int{sel, len(cv.model.items) - 1}); selectIdx >= 0 {
 		cv.listView.SetCurrentIndex(selectIdx)
 	}
 }

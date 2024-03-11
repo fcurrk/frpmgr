@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,8 +9,7 @@ import (
 
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"github.com/lxn/win"
-	"github.com/samber/lo"
+	"github.com/thoas/go-funk"
 
 	"github.com/koho/frpmgr/i18n"
 	"github.com/koho/frpmgr/pkg/config"
@@ -42,6 +40,8 @@ type EditClientDialog struct {
 type editClientBinder struct {
 	// Name of this config
 	Name string
+	// CustomText contains the user-defined parameters
+	CustomText string
 	// Common settings
 	config.ClientCommon
 }
@@ -61,6 +61,7 @@ func NewEditClientDialog(conf *Conf, name string) *EditClientDialog {
 	v.data = data
 	v.binder = &editClientBinder{
 		Name:         v.Conf.Name,
+		CustomText:   util.Map2String(data.Custom),
 		ClientCommon: v.data.ClientCommon,
 	}
 	if name != "" {
@@ -86,7 +87,7 @@ func (cd *EditClientDialog) View() Dialog {
 	if cd.Conf.Name != "" {
 		title = i18n.Sprintf("Edit Client - %s", cd.Conf.Name)
 	}
-	dlg := NewBasicDialog(&cd.Dialog, title, loadIcon(consts.IconEditDialog, 32), DataBinder{
+	dlg := NewBasicDialog(&cd.Dialog, title, loadSysIcon("imageres", consts.IconEditDialog, 32), DataBinder{
 		AssignTo:   &cd.db,
 		Name:       "common",
 		DataSource: cd.binder,
@@ -96,9 +97,9 @@ func (cd *EditClientDialog) View() Dialog {
 		},
 	)
 	dlg.Layout = VBox{Margins: Margins{Left: 7, Top: 9, Right: 7, Bottom: 9}}
-	minWidth := lo.Sum(lo.Map(pages, func(page TabPage, i int) int {
+	minWidth := int(funk.Sum(funk.Map(pages, func(page TabPage) int {
 		return calculateStringWidth(page.Title.(string)) + 19
-	})) + 70
+	})) + 70)
 	dlg.MinSize = Size{Width: minWidth, Height: 380}
 	return dlg
 }
@@ -121,19 +122,7 @@ func (cd *EditClientDialog) basicConfPage() TabPage {
 			Label{Text: i18n.SprintfColon("Server Address")},
 			LineEdit{Text: Bind("ServerAddress", consts.ValidateNonEmpty)},
 			Label{Text: i18n.SprintfColon("Server Port")},
-			Composite{
-				Layout: HBox{MarginsZero: true},
-				Children: []Widget{
-					NumberEdit{
-						Value:              Bind("ServerPort"),
-						MinValue:           0,
-						MaxValue:           65535,
-						SpinButtonsVisible: true,
-						MinSize:            Size{Width: 90},
-					},
-					HSpacer{},
-				},
-			},
+			LineEdit{Text: Bind("ServerPort", consts.ValidateRequireInteger)},
 			Label{Text: i18n.SprintfColon("User")},
 			LineEdit{Text: Bind("User")},
 			Label{Text: i18n.SprintfColon("STUN Server")},
@@ -165,16 +154,7 @@ func (cd *EditClientDialog) authConfPage() TabPage {
 			Label{Visible: Bind("oidcCheck.Checked"), Text: i18n.SprintfColon("Scope")},
 			LineEdit{Visible: Bind("oidcCheck.Checked"), Text: Bind("OIDCScope")},
 			Label{Visible: Bind("oidcCheck.Checked"), Text: i18n.SprintfColon("Token Endpoint")},
-			Composite{
-				Visible: Bind("oidcCheck.Checked"),
-				Layout:  HBox{MarginsZero: true},
-				Children: []Widget{
-					LineEdit{Text: Bind("OIDCTokenEndpoint")},
-					ToolButton{Text: "#", ToolTipText: i18n.Sprintf("Parameters"), OnClicked: func() {
-						NewAttributeDialog(i18n.Sprintf("Parameters"), &cd.binder.OIDCAdditionalEndpointParams).Run(cd.Form())
-					}},
-				},
-			},
+			LineEdit{Visible: Bind("oidcCheck.Checked"), Text: Bind("OIDCTokenEndpoint")},
 			Label{Visible: Bind("!noAuthCheck.Checked"), Text: i18n.SprintfColon("Authentication")},
 			Composite{
 				Visible: Bind("!noAuthCheck.Checked"),
@@ -211,42 +191,21 @@ func (cd *EditClientDialog) logConfPage() TabPage {
 }
 
 func (cd *EditClientDialog) adminConfPage() TabPage {
-	adminEnabled := Bind("adminPort.Value > 0")
 	return AlignGrid(TabPage{
 		Title:  i18n.Sprintf("Admin"),
 		Layout: Grid{Columns: 2},
 		Children: []Widget{
 			Label{Text: i18n.SprintfColon("Admin Address")},
-			Composite{
-				Layout: HBox{MarginsZero: true},
-				Children: []Widget{
-					LineEdit{Text: Bind("AdminAddr"), StretchFactor: 2},
-					Label{Text: ":"},
-					NumberEdit{
-						Name:     "adminPort",
-						Value:    Bind("AdminPort"),
-						MinValue: 0,
-						MaxValue: 65535,
-						MinSize:  Size{Width: 70},
-					},
-					ToolButton{
-						Enabled:     Bind("adminPort.Value > 0 && !legacyFormat.Checked"),
-						Image:       loadIcon(consts.IconLock, 16),
-						ToolTipText: "TLS", OnClicked: func() {
-							cd.adminTLSDialog().Run(cd.Form())
-						},
-					},
-				},
-			},
-			Label{Enabled: adminEnabled, Text: i18n.SprintfColon("User")},
-			LineEdit{Enabled: adminEnabled, Text: Bind("AdminUser")},
-			Label{Enabled: adminEnabled, Text: i18n.SprintfColon("Password")},
-			LineEdit{Enabled: adminEnabled, Text: Bind("AdminPwd"), PasswordMode: true},
-			Label{Enabled: adminEnabled, Text: i18n.SprintfColon("Assets")},
-			NewBrowseLineEdit(nil, true, adminEnabled, Bind("AssetsDir"),
+			LineEdit{Text: Bind("AdminAddr")},
+			Label{Text: i18n.SprintfColon("Admin Port")},
+			LineEdit{Name: "adminPort", Text: Bind("AdminPort", consts.ValidateInteger)},
+			Label{Enabled: Bind("adminPort.Text != ''"), Text: i18n.SprintfColon("User")},
+			LineEdit{Enabled: Bind("adminPort.Text != ''"), Text: Bind("AdminUser")},
+			Label{Enabled: Bind("adminPort.Text != ''"), Text: i18n.SprintfColon("Password")},
+			LineEdit{Enabled: Bind("adminPort.Text != ''"), Text: Bind("AdminPwd"), PasswordMode: true},
+			Label{Enabled: Bind("adminPort.Text != ''"), Text: i18n.SprintfColon("Assets")},
+			NewBrowseLineEdit(nil, true, Bind("adminPort.Text != ''"), Bind("AssetsDir"),
 				i18n.Sprintf("Select a local directory that the admin server will load resources from."), "", false),
-			Label{Enabled: adminEnabled, Text: i18n.SprintfColon("Other Options")},
-			CheckBox{Enabled: adminEnabled, Text: "Pprof", Checked: Bind("PprofEnable")},
 			Label{Text: i18n.SprintfColon("Auto Delete")},
 			NewRadioButtonGroup("DeleteMethod", nil, nil, []RadioButton{
 				{Name: "absCheck", Text: i18n.Sprintf("Absolute"), Value: consts.DeleteAbsolute},
@@ -280,14 +239,7 @@ func (cd *EditClientDialog) connectionConfPage() TabPage {
 			Label{Text: i18n.SprintfColon("HTTP Proxy")},
 			LineEdit{Text: Bind("HTTPProxy")},
 			Label{Text: i18n.SprintfColon("Pool Count")},
-			Composite{
-				Layout: HBox{MarginsZero: true},
-				Children: []Widget{
-					NumberEdit{Value: Bind("PoolCount")},
-					Label{Text: i18n.SprintfColon("UDP Packet Size")},
-					NumberEdit{Value: Bind("UDPPacketSize")},
-				},
-			},
+			NumberEdit{Value: Bind("PoolCount")},
 			Label{Text: i18n.SprintfColon("Heartbeat")},
 			Composite{
 				Layout: HBox{MarginsZero: true},
@@ -339,19 +291,22 @@ func (cd *EditClientDialog) tlsConfPage() TabPage {
 			Label{Visible: Bind("tlsCheck.Checked"), Text: i18n.SprintfColon("Trusted CA"), AlwaysConsumeSpace: true},
 			NewBrowseLineEdit(nil, Bind("tlsCheck.Checked"), true, Bind("TLSTrustedCaFile"),
 				i18n.Sprintf("Select Trusted CA File"), consts.FilterCert, true),
-			Label{Visible: Bind("tlsCheck.Checked"), Text: i18n.SprintfColon("Other Options")},
-			CheckBox{Visible: Bind("tlsCheck.Checked"), Text: i18n.Sprintf("Disable custom first byte"), Checked: Bind("DisableCustomTLSFirstByte")},
 		},
 	}
 }
 
 func (cd *EditClientDialog) advancedConfPage() TabPage {
-	muxChecked := Bind("muxCheck.Checked")
-	var legacy *walk.CheckBox
 	return TabPage{
 		Title:  i18n.Sprintf("Advanced"),
 		Layout: Grid{Columns: 2},
 		Children: []Widget{
+			Label{Text: i18n.SprintfColon("TCP Mux")},
+			NewRadioButtonGroup("TCPMux", nil, nil, []RadioButton{
+				{Name: "muxCheck", Text: i18n.Sprintf("On"), Value: true},
+				{Text: i18n.Sprintf("Off"), Value: false},
+			}),
+			Label{Enabled: Bind("muxCheck.Checked"), Text: i18n.SprintfColon("Mux Keepalive")},
+			NumberEdit{Enabled: Bind("muxCheck.Checked"), Value: Bind("TCPMuxKeepaliveInterval"), Suffix: i18n.SprintfLSpace("s")},
 			Label{Text: "DNS:"},
 			LineEdit{Text: Bind("DNSServer")},
 			Label{Text: i18n.SprintfColon("Source Address")},
@@ -366,101 +321,25 @@ func (cd *EditClientDialog) advancedConfPage() TabPage {
 			Composite{
 				Layout: VBox{MarginsZero: true, SpacingZero: true, Alignment: AlignHNearVNear},
 				Children: []Widget{
-					Composite{
-						Layout: HBox{MarginsZero: true},
-						Children: []Widget{
-							CheckBox{Name: "muxCheck", Text: i18n.Sprintf("TCP Mux"), Checked: Bind("TCPMux")},
-							HSpacer{},
-							Label{Enabled: muxChecked, Text: i18n.SprintfColon("Heartbeat")},
-							NumberEdit{
-								Enabled:            muxChecked,
-								Value:              Bind("TCPMuxKeepaliveInterval"),
-								MinValue:           0,
-								MaxValue:           math.MaxFloat64,
-								SpinButtonsVisible: true,
-								MinSize:            Size{Width: 85},
-								Style:              win.ES_RIGHT,
-							},
-							Label{Enabled: muxChecked, Text: i18n.Sprintf("s")},
-						},
-					},
 					CheckBox{Text: i18n.Sprintf("Exit after login failure"), Checked: Bind("LoginFailExit")},
 					CheckBox{Text: i18n.Sprintf("Disable auto-start at boot"), Checked: Bind("ManualStart")},
-					CheckBox{
-						AssignTo: &legacy,
-						Name:     "legacyFormat",
-						Text:     i18n.Sprintf("Use legacy format config file"),
-						Checked:  Bind("LegacyFormat"),
-						OnCheckedChanged: func() {
-							if !legacy.Checked() && !cd.canUpgradeFormat() {
-								legacy.SetChecked(true)
-							}
-						},
-					},
 					VSpacer{Size: 4},
-					Composite{
-						Layout: HBox{MarginsZero: true, Spacing: 18},
-						Children: []Widget{
-							LinkLabel{
-								Text: fmt.Sprintf("<a>%s</a>", i18n.SprintfEllipsis("Metadata")),
-								OnLinkActivated: func(link *walk.LinkLabelLink) {
-									NewAttributeDialog(i18n.Sprintf("Metadata"), &cd.binder.Metas).Run(cd.Form())
-								},
-							},
-							LinkLabel{
-								Text: fmt.Sprintf("<a>%s</a>", i18n.SprintfEllipsis("Experimental Features")),
-								OnLinkActivated: func(link *walk.LinkLabelLink) {
-									cd.experimentDialog().Run(cd.Form())
-								},
-							},
-						},
-					},
+					LinkLabel{Text: fmt.Sprintf("<a>%s</a>", i18n.SprintfEllipsis("Custom")), OnLinkActivated: func(link *walk.LinkLabelLink) {
+						cd.customConfDialog().Run(cd.Form())
+					}},
 				},
 			},
 		},
 	}
 }
 
-func (cd *EditClientDialog) experimentDialog() Dialog {
-	dlg := NewBasicDialog(nil, i18n.Sprintf("Experimental Features"),
-		loadIcon(consts.IconExperiment, 32), DataBinder{DataSource: cd.binder}, nil,
-		Label{Text: i18n.Sprintf("* The following features may affect the stability of the service.")},
-		CheckBox{Checked: Bind("SVCBEnable"), Text: i18n.Sprintf("Use server SVCB records"), Alignment: AlignHNearVNear},
-		VSpacer{},
+func (cd *EditClientDialog) customConfDialog() Dialog {
+	customDialog := NewBasicDialog(nil, i18n.Sprintf("Custom Options"), cd.Icon(), DataBinder{DataSource: cd.binder}, nil,
+		Label{Text: i18n.Sprintf("* Refer to the [common] section of the FRP configuration file.")},
+		TextEdit{Text: Bind("CustomText"), VScroll: true},
 	)
-	dlg.MinSize = Size{Width: 300, Height: 180}
-	dlg.FixedSize = true
-	return dlg
-}
-
-func (cd *EditClientDialog) adminTLSDialog() Dialog {
-	var widgets [4]*walk.LineEdit
-	dlg := NewBasicDialog(nil, "TLS",
-		loadIcon(consts.IconLock, 32),
-		DataBinder{DataSource: &cd.binder.AdminTLS}, nil,
-		Label{Text: i18n.SprintfColon("Host Name")},
-		LineEdit{AssignTo: &widgets[0], Text: Bind("ServerName")},
-		Label{Text: i18n.SprintfColon("Certificate")},
-		NewBrowseLineEdit(&widgets[1], true, true, Bind("CertFile"),
-			i18n.Sprintf("Select Certificate File"), consts.FilterCert, true),
-		Label{Text: i18n.SprintfColon("Certificate Key")},
-		NewBrowseLineEdit(&widgets[2], true, true, Bind("KeyFile"),
-			i18n.Sprintf("Select Certificate Key File"), consts.FilterKey, true),
-		Label{Text: i18n.SprintfColon("Trusted CA")},
-		NewBrowseLineEdit(&widgets[3], true, true, Bind("TrustedCaFile"),
-			i18n.Sprintf("Select Trusted CA File"), consts.FilterCert, true),
-		VSpacer{Size: 4},
-	)
-	dlg.MinSize = Size{Width: 350}
-	dlg.FixedSize = true
-	buttons := dlg.Children[len(dlg.Children)-1].(Composite)
-	buttons.Children = append([]Widget{PushButton{Text: i18n.Sprintf("Clear All"), OnClicked: func() {
-		for _, widget := range widgets {
-			widget.SetText("")
-		}
-	}}}, buttons.Children...)
-	dlg.Children[len(dlg.Children)-1] = buttons
-	return dlg
+	customDialog.MinSize = Size{Width: 420, Height: 280}
+	return customDialog
 }
 
 func (cd *EditClientDialog) shutdownService(wait bool) error {
@@ -515,13 +394,13 @@ func (cd *EditClientDialog) onSave() {
 				// Rename old log files
 				// The service should be stopped first
 				cd.shutdownService(true)
-				util.RenameFiles(logs, lo.Map(dates, func(item string, i int) string {
-					if item == "" {
+				util.RenameFiles(logs, funk.Map(funk.Zip(logs, dates), func(t funk.Tuple) string {
+					if t.Element2 == "" {
 						return newConf.LogFile
 					} else {
-						return filepath.Join(filepath.Dir(newConf.LogFile), baseName+"."+item+ext)
+						return filepath.Join(filepath.Dir(newConf.LogFile), baseName+"."+t.Element2.(string)+ext)
 					}
-				}))
+				}).([]string))
 			}
 		}
 	} else if cd.hasConf(newConf.Name) {
@@ -532,7 +411,9 @@ func (cd *EditClientDialog) onSave() {
 		cd.Added = true
 	}
 	cd.Conf.Name = newConf.Name
+	// The order matters
 	cd.data.ClientCommon = newConf.ClientCommon
+	cd.data.Custom = util.String2Map(newConf.CustomText)
 	cd.Accept()
 }
 
@@ -546,17 +427,4 @@ func (cd *EditClientDialog) hasConf(name string) bool {
 
 func (cd *EditClientDialog) Run(owner walk.Form) (int, error) {
 	return cd.View().Run(owner)
-}
-
-func (cd *EditClientDialog) canUpgradeFormat() bool {
-	for _, v := range cd.data.Proxies {
-		if !v.IsVisitor() {
-			if _, err := config.ClientProxyToV1(v); err != nil {
-				showErrorMessage(cd.Form(), "", i18n.Sprintf("Unable to upgrade your config file due to proxy conversion failure, "+
-					"please check the proxy config and try again.\n\nBad proxy: %s", v.Name))
-				return false
-			}
-		}
-	}
-	return true
 }

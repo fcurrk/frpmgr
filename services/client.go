@@ -7,38 +7,30 @@ import (
 	_ "github.com/fatedier/frp/assets/frpc"
 	"github.com/fatedier/frp/client"
 	"github.com/fatedier/frp/pkg/config"
-	"github.com/fatedier/frp/pkg/config/v1"
 	"github.com/fatedier/frp/pkg/util/log"
 )
 
 type FrpClientService struct {
 	svr  *client.Service
 	file string
-	cfg  *v1.ClientCommonConfig
-	done chan struct{}
 }
 
 func NewFrpClientService(cfgFile string) (*FrpClientService, error) {
-	cfg, pxyCfgs, visitorCfgs, _, err := config.LoadClientConfig(cfgFile, false)
+	cfg, pxyCfgs, visitorCfgs, err := config.ParseClientConfig(cfgFile)
 	if err != nil {
 		return nil, err
 	}
-	svr, err := client.NewService(client.ServiceOptions{
-		Common:         cfg,
-		ProxyCfgs:      pxyCfgs,
-		VisitorCfgs:    visitorCfgs,
-		ConfigFilePath: cfgFile,
-	})
+	svr, err := client.NewService(cfg, pxyCfgs, visitorCfgs, cfgFile)
 	if err != nil {
 		return nil, err
 	}
-	log.InitLog(cfg.Log.To, cfg.Log.Level, cfg.Log.MaxDays, cfg.Log.DisablePrintColor)
-	return &FrpClientService{svr: svr, file: cfgFile, cfg: cfg, done: make(chan struct{})}, nil
+	log.InitLog(cfg.LogWay, cfg.LogFile, cfg.LogLevel,
+		cfg.LogMaxDays, cfg.DisableLogColor)
+	return &FrpClientService{svr: svr, file: cfgFile}, nil
 }
 
 // Run starts frp client service in blocking mode.
 func (s *FrpClientService) Run() {
-	defer close(s.done)
 	if s.file != "" {
 		log.Trace("start frpc service for config file [%s]", s.file)
 		defer log.Trace("frpc service for config file [%s] stopped", s.file)
@@ -63,13 +55,9 @@ func (s *FrpClientService) Stop(wait bool) {
 
 // Reload creates or updates or removes proxies of frpc.
 func (s *FrpClientService) Reload() error {
-	_, pxyCfgs, visitorCfgs, _, err := config.LoadClientConfig(s.file, false)
+	_, pxyCfgs, visitorCfgs, err := config.ParseClientConfig(s.file)
 	if err != nil {
 		return err
 	}
-	return s.svr.UpdateAllConfigurer(pxyCfgs, visitorCfgs)
-}
-
-func (s *FrpClientService) Done() <-chan struct{} {
-	return s.done
+	return s.svr.ReloadConf(pxyCfgs, visitorCfgs)
 }

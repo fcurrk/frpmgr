@@ -167,31 +167,6 @@
             "translation": "취소"
         },
         {
-            "id": "Name",
-            "message": "Name",
-            "translation": "이름"
-        },
-        {
-            "id": "Value",
-            "message": "Value",
-            "translation": "값"
-        },
-        {
-            "id": "Add",
-            "message": "Add",
-            "translation": "추가하다"
-        },
-        {
-            "id": "Delete",
-            "message": "Delete",
-            "translation": "삭제"
-        },
-        {
-            "id": "Clear All",
-            "message": "Clear All",
-            "translation": "모두 지우기"
-        },
-        {
             "id": "Configuration",
             "message": "Configuration",
             "translation": "구성"
@@ -290,6 +265,11 @@
             "id": "Export All Configs to ZIP",
             "message": "Export All Configs to ZIP",
             "translation": "모든 구성을 ZIP 으로 내보내기"
+        },
+        {
+            "id": "Delete",
+            "message": "Delete",
+            "translation": "삭제"
         },
         {
             "id": "New Config",
@@ -410,6 +390,11 @@
             "translation": "기초적인"
         },
         {
+            "id": "Name",
+            "message": "Name",
+            "translation": "이름"
+        },
+        {
             "id": "Server Address",
             "message": "Server Address",
             "translation": "서버 주소"
@@ -470,11 +455,6 @@
             "translation": "토큰 URL"
         },
         {
-            "id": "Parameters",
-            "message": "Parameters",
-            "translation": "매개변수"
-        },
-        {
             "id": "Authentication",
             "message": "Authentication",
             "translation": "입증"
@@ -530,6 +510,11 @@
             "translation": "관리자 주소"
         },
         {
+            "id": "Admin Port",
+            "message": "Admin Port",
+            "translation": "관리 포트"
+        },
+        {
             "id": "Password",
             "message": "Password",
             "translation": "비밀번호"
@@ -543,11 +528,6 @@
             "id": "Select a local directory that the admin server will load resources from.",
             "message": "Select a local directory that the admin server will load resources from.",
             "translation": "관리 서버가 리소스를 로드할 로컬 디렉토리를 선택하십시오."
-        },
-        {
-            "id": "Other Options",
-            "message": "Other Options",
-            "translation": "다른 옵션"
         },
         {
             "id": "Auto Delete",
@@ -598,11 +578,6 @@
             "id": "Pool Count",
             "message": "Pool Count",
             "translation": "연결 수"
-        },
-        {
-            "id": "UDP Packet Size",
-            "message": "UDP Packet Size",
-            "translation": "UDP 패킷 크기"
         },
         {
             "id": "Heartbeat",
@@ -690,14 +665,19 @@
             "translation": "신뢰할 수 있는 CA 파일 선택"
         },
         {
-            "id": "Disable custom first byte",
-            "message": "Disable custom first byte",
-            "translation": "맞춤 첫 번째 바이트 비활성화"
-        },
-        {
             "id": "Advanced",
             "message": "Advanced",
             "translation": "고급의"
+        },
+        {
+            "id": "TCP Mux",
+            "message": "TCP Mux",
+            "translation": "다중화"
+        },
+        {
+            "id": "Mux Keepalive",
+            "message": "Mux Keepalive",
+            "translation": "다중화 대기 중"
         },
         {
             "id": "Source Address",
@@ -705,9 +685,9 @@
             "translation": "소스 주소"
         },
         {
-            "id": "TCP Mux",
-            "message": "TCP Mux",
-            "translation": "다중화"
+            "id": "Other Options",
+            "message": "Other Options",
+            "translation": "다른 옵션"
         },
         {
             "id": "Exit after login failure",
@@ -720,29 +700,19 @@
             "translation": "부팅 시 자동 시작 비활성화"
         },
         {
-            "id": "Use legacy format config file",
-            "message": "Use legacy format config file",
-            "translation": "레거시 형식 구성 파일 사용"
+            "id": "Custom",
+            "message": "Custom",
+            "translation": "관습"
         },
         {
-            "id": "Metadata",
-            "message": "Metadata",
-            "translation": "메타데이터"
+            "id": "Custom Options",
+            "message": "Custom Options",
+            "translation": "사용자 지정 옵션"
         },
         {
-            "id": "Experimental Features",
-            "message": "Experimental Features",
-            "translation": "실험적 기능"
-        },
-        {
-            "id": "* The following features may affect the stability of the service.",
-            "message": "* The following features may affect the stability of the service.",
-            "translation": "* 다음 기능은 서비스의 안정성에 영향을 미칠 수 있습니다."
-        },
-        {
-            "id": "Use server SVCB records",
-            "message": "Use server SVCB records",
-            "translation": "서버 SVCB 기록 사용"
+            "id": "* Refer to the [common] section of the FRP configuration file.",
+            "message": "* Refer to the [common] section of the FRP configuration file.",
+            "translation": "* FRP 설정 파일의 [common] 부분을 참고하세요."
         },
         {
             "id": "Config already exists",
@@ -761,21 +731,6 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "name"
-                }
-            ]
-        },
-        {
-            "id": "Unable to upgrade your config file due to proxy conversion failure, please check the proxy config and try again.\n\nBad proxy: {Name}",
-            "message": "Unable to upgrade your config file due to proxy conversion failure, please check the proxy config and try again.\n\nBad proxy: {Name}",
-            "translation": "프록시 변환 실패로 인해 구성 파일을 업그레이드할 수 없습니다. 프록시 구성을 확인하고 다시 시도하세요.\n\n잘못된 프록시: {Name}",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "v.Name"
                 }
             ]
         },
@@ -883,11 +838,6 @@
             "id": "Locations",
             "message": "Locations",
             "translation": "URL 라우팅"
-        },
-        {
-            "id": "Request headers",
-            "message": "Request headers",
-            "translation": "요청 헤더"
         },
         {
             "id": "Multiplexer",
@@ -1060,6 +1010,11 @@
             "translation": "간격"
         },
         {
+            "id": "* Refer to the parameters supported by FRP.",
+            "message": "* Refer to the parameters supported by FRP.",
+            "translation": "* FRP 에서 지원하는 매개변수를 참조하십시오."
+        },
+        {
             "id": "Proxy already exists",
             "message": "Proxy already exists",
             "translation": "프록시가 이미 있습니다."
@@ -1080,46 +1035,6 @@
             ]
         },
         {
-            "id": "Bind port is required.",
-            "message": "Bind port is required.",
-            "translation": "바인드 포트가 필요합니다."
-        },
-        {
-            "id": "Requires local port or plugin.",
-            "message": "Requires local port or plugin.",
-            "translation": "로컬 포트 또는 플러그인이 필요합니다."
-        },
-        {
-            "id": "Invalid local port.",
-            "message": "Invalid local port.",
-            "translation": "로컬 포트가 잘못되었습니다."
-        },
-        {
-            "id": "Health check url is required.",
-            "message": "Health check url is required.",
-            "translation": "상태 확인 URL이 필요합니다."
-        },
-        {
-            "id": "The plugin does not support range ports.",
-            "message": "The plugin does not support range ports.",
-            "translation": "플러그인은 범위 포트를 지원하지 않습니다."
-        },
-        {
-            "id": "Invalid remote port.",
-            "message": "Invalid remote port.",
-            "translation": "원격 포트가 잘못되었습니다."
-        },
-        {
-            "id": "The number of local ports should be the same as the number of remote ports.",
-            "message": "The number of local ports should be the same as the number of remote ports.",
-            "translation": "로컬 포트 수는 원격 포트 수와 동일해야 합니다."
-        },
-        {
-            "id": "Custom domains and subdomain should have at least one of these set.",
-            "message": "Custom domains and subdomain should have at least one of these set.",
-            "translation": "사용자 정의 도메인 및 하위 도메인에는 이러한 세트가 하나 이상 있어야 합니다."
-        },
-        {
             "id": "Open Log Folder",
             "message": "Open Log Folder",
             "translation": "로그 폴더 열기"
@@ -1133,6 +1048,11 @@
             "id": "Item",
             "message": "Item",
             "translation": "안건"
+        },
+        {
+            "id": "Value",
+            "message": "Value",
+            "translation": "값"
         },
         {
             "id": "NAT Type",
@@ -1215,36 +1135,6 @@
             "translation": "서비스"
         },
         {
-            "id": "Stop config \"{Name}\"",
-            "message": "Stop config \"{Name}\"",
-            "translation": "\"{Name}\" 구성 중지",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "conf.Name"
-                }
-            ]
-        },
-        {
-            "id": "Are you sure you would like to stop config \"{Name}\"?",
-            "message": "Are you sure you would like to stop config \"{Name}\"?",
-            "translation": "\"{Name}\" 구성을 중지하시겠습니까?",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "conf.Name"
-                }
-            ]
-        },
-        {
             "id": "Stop",
             "message": "Stop",
             "translation": "중지"
@@ -1253,6 +1143,11 @@
             "id": "Local Directory",
             "message": "Local Directory",
             "translation": "로컬 디렉토리"
+        },
+        {
+            "id": "Add",
+            "message": "Add",
+            "translation": "추가하다"
         },
         {
             "id": "Port",
@@ -1370,9 +1265,9 @@
             "translation": "HTTP 파일 서버"
         },
         {
-            "id": "Disable",
-            "message": "Disable",
-            "translation": "폐쇄"
+            "id": "Enable",
+            "message": "Enable",
+            "translation": "켜다"
         },
         {
             "id": "Open Config",
@@ -1393,11 +1288,6 @@
             "id": "Copy Access Address",
             "message": "Copy Access Address",
             "translation": "액세스 주소 복사"
-        },
-        {
-            "id": "This feature only supports text in INI or TOML format.",
-            "message": "This feature only supports text in INI or TOML format.",
-            "translation": "이 기능은 INI 또는 TOML 형식의 텍스트만 지원합니다."
         },
         {
             "id": "Delete proxy \"{Name}\"",
@@ -1460,9 +1350,9 @@
             ]
         },
         {
-            "id": "Enable",
-            "message": "Enable",
-            "translation": "켜다"
+            "id": "Disable",
+            "message": "Disable",
+            "translation": "폐쇄"
         },
         {
             "id": "Passive Port Range",

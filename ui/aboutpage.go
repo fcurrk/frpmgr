@@ -30,22 +30,17 @@ type aboutViewModel struct {
 	GithubRelease
 	Checking   bool
 	NewVersion bool
-	TabIcon    *walk.Icon
-	UpdateIcon *walk.Icon
 }
 
 func NewAboutPage() *AboutPage {
-	ap := new(AboutPage)
-	ap.viewModel.TabIcon = loadShieldIcon(16)
-	ap.viewModel.UpdateIcon = loadIcon(consts.IconUpdate, 32)
-	return ap
+	return new(AboutPage)
 }
 
 func (ap *AboutPage) Page() TabPage {
 	return TabPage{
 		AssignTo:   &ap.TabPage,
 		Title:      Bind(fmt.Sprintf("vm.NewVersion ? '%s' : '%s'", i18n.Sprintf("New Version!"), i18n.Sprintf("About"))),
-		Image:      Bind("vm.NewVersion ? vm.TabIcon : ''"),
+		Image:      Bind(fmt.Sprintf("vm.NewVersion ? sysIcon('imageres', 16, %d, %d) : ''", consts.IconNewVersion1, consts.IconNewVersion2)),
 		DataBinder: DataBinder{AssignTo: &ap.db, Name: "vm", DataSource: &ap.viewModel},
 		Layout:     VBox{},
 		Children: []Widget{
@@ -75,7 +70,7 @@ func (ap *AboutPage) Page() TabPage {
 										ap.checkUpdate(true)
 									}
 								},
-								Image:   Bind("vm.NewVersion ? vm.UpdateIcon : ''"),
+								Image:   Bind(fmt.Sprintf("vm.NewVersion ? sysIcon('shell32', 32, %d) : ''", consts.IconUpdate)),
 								MinSize: Size{Width: 250, Height: 38},
 							},
 						},
